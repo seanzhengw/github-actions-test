@@ -4,12 +4,17 @@ on: push
 
 jobs: 
   build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Say hello
+      run: |
+        echo Hello
   test:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - name: Say hello
+    - name: Say name
       env:
         MY_VAR: GitHub Actions
       run: |
-        echo Hello $MY_VAR.
+        echo $MY_VAR.
