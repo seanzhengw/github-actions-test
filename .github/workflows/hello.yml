@@ -1,0 +1,15 @@
+name: Hello GitHub Actions
+
+on: push
+
+jobs: 
+  build:
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Say hello
+      env:
+        MY_VAR: GitHub Actions
+      run: |
+        echo Hello $MY_VAR.
