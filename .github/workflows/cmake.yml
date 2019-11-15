@@ -1,11 +1,9 @@
 on: [push]
 
 jobs:
-  hello_world_job:
+  build:
     runs-on: ubuntu-latest
-    name: Cmake by docker action
+    name: cmake and make
     steps:
     - uses: actions/checkout@v1
-    - name: cmake and make
-      id: hello
-      uses: seanzhengw/hello-world-docker-action@v2.0.6
+    - uses: seanzhengw/github-actions/cmake@master
