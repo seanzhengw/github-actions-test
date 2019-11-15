@@ -5,6 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Cmake by docker action
     steps:
+    - uses: actions/checkout@v1
     - name: cmake and make
       id: hello
-      uses: seanzhengw/hello-world-docker-action@v2.0.0
+      uses: seanzhengw/hello-world-docker-action@v2.0.1
