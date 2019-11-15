@@ -3,11 +3,11 @@ on:
     tags:
       - 'v*'
 
-name: Create Release
+name: Auto release for version tag
 
 jobs:
   build:
-    name: Create Release
+    name: Build on each os
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -19,6 +19,8 @@ jobs:
         - os: windows-latest
           EXE_EXT: .exe
           ASSET_TAG: win
+    outputs: 
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -27,7 +29,22 @@ jobs:
           g++ src/main.cpp -o hello${{matrix.EXE_EXT}}
       - name: Pack files
         run: |
-          7z a -tzip my-artifact.zip hello${{matrix.EXE_EXT}}
+          7z a -tzip helloworld-${{matrix.ASSET_TAG}}.zip hello${{matrix.EXE_EXT}}
+      - name: Upload packed files
+        uses: actions/upload-artifact@v1
+        with:
+          name: artifact
+          path: helloworld-${{matrix.ASSET_TAG}}.zip
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    outputs: 
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Get the tag name
+        id: get_info
+        run: echo ::set-output name=TAG::${GITHUB_REF#refs/tags/}
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -36,17 +53,31 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
+          body: |
+            Auto Release of tag ${{ steps.get_info.outputs.TAG }}
           draft: false
           prerelease: false
+  upload:
+    name: Upload Release Asset
+    needs: [build, release]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tag: [linux, win]
+    steps:
+      - name: Download artifact from job build
+        uses: actions/download-artifact@v1
+        with:
+          name: artifact
       - name: Upload Release Asset
         id: upload_release_asset 
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./my-artifact.zip
-          asset_name: my-artifact-${{matrix.ASSET_TAG}}.zip
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: ./artifact/helloworld-${{ matrix.tag }}.zip
+          asset_name: helloworld-${{ matrix.tag }}.zip
           asset_content_type: application/zip
       - name: Show Asset Url
         run: echo ${{ steps.upload_release_asset.outputs.browser_download_url }}
