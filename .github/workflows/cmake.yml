@@ -1,3 +1,5 @@
+name: seanzhengw/github-actions/cmake@master test
+
 on: [push]
 
 jobs:
