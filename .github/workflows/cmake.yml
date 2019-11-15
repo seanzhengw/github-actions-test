@@ -8,4 +8,4 @@ jobs:
     - uses: actions/checkout@v1
     - name: cmake and make
       id: hello
-      uses: seanzhengw/hello-world-docker-action@v2.0.4
+      uses: seanzhengw/hello-world-docker-action@v2.0.5
