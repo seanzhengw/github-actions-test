@@ -8,10 +8,26 @@ name: Create Release
 jobs:
   build:
     name: Create Release
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        include:
+        - os: ubuntu-latest
+          EXE_EXT: 
+          ASSET_TAG: linux
+        - os: windows-latest
+          EXE_EXT: .exe
+          ASSET_TAG: win
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Build project
+        run: |
+          g++ src/main.cpp -o hello${{matrix.EXE_EXT}}
+      - name: Pack files
+        run: |
+          zip --junk-paths my-artifact hello
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -20,9 +36,17 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
-          body: |
-            Changes in this Release
-            - First Change
-            - Second Change
           draft: false
           prerelease: false
+      - name: Upload Release Asset
+        id: upload_release_asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./my-artifact.zip
+          asset_name: my-artifact-${{matrix.ASSET_TAG}}.zip
+          asset_content_type: application/zip
+      - name: Show Asset Url
+        run: echo ${{ steps.upload_release_asset.outputs.browser_download_url }}
