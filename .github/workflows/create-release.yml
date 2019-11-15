@@ -27,7 +27,7 @@ jobs:
           g++ src/main.cpp -o hello${{matrix.EXE_EXT}}
       - name: Pack files
         run: |
-          zip --junk-paths my-artifact hello
+          7z a -tzip my-artifact.zip hello${{matrix.EXE_EXT}}
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
